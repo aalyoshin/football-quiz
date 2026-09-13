@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Пресинг — футбольний квіз</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Rubik:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:#0b1020;background-image:radial-gradient(60vw 40vh at 110% 110%, rgba(232,73,46,.16), transparent 60%),radial-gradient(50vw 30vh at -10% -10%, rgba(39,67,214,.22), transparent 60%);color:#eef1f9;font-family:'Rubik',system-ui,sans-serif;padding:0 0 48px}
+.wrap{max-width:540px;margin:0 auto;padding:12px 14px}
+.h{font-family:'Oswald','Rubik',sans-serif;text-transform:uppercase;letter-spacing:.04em}
+.rname{font-size:13px;color:#8b93ad;margin-bottom:2px}
+.rtitle{font-size:26px;line-height:1.1;margin-bottom:10px}
+.board{display:flex;gap:8px;position:sticky;top:0;z-index:5;background:rgba(11,16,32,.92);backdrop-filter:blur(6px);padding:10px 14px;border-bottom:1px solid #232b47}
+.pcell{flex:1;border-radius:10px;padding:6px 8px;background:#141b33;border:1px solid #232b47;text-align:center}
+.pcell.lead{border-color:#37e07c}
+.pcell .nm{font-size:12px;color:#aab2cc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcell .sc{font-family:'Oswald';font-size:20px}
+.card{background:#121829;border:1px solid #26304f;border-radius:14px;padding:14px;margin-top:12px}
+.qbox{background:linear-gradient(180deg,#123b24,#0d2c1b);border:1.5px solid #37e07c;border-radius:12px;padding:14px;font-size:17px;line-height:1.45}
+.abox{background:#1a2340;border:1px dashed #4f5b85;border-radius:12px;padding:12px;margin-top:10px;font-size:16px}
+.btn{display:block;width:100%;border:none;border-radius:12px;padding:13px 14px;font-family:'Rubik';font-size:16px;font-weight:500;cursor:pointer;margin-top:10px;color:#0b1020;background:#37e07c;transition:transform .06s}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:transparent;color:#cdd4ea;border:1px solid #3a4569}
+.btn.red{background:#ff6257;color:#210b09}
+.btn.blue{background:#3b57e8;color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.row{display:flex;gap:8px}
+.row .btn{flex:1}
+.tag{display:inline-block;font-size:12px;padding:3px 8px;border-radius:999px;background:#1a2340;border:1px solid #3a4569;color:#aab2cc;margin:2px 6px 2px 0}
+.tag.green{border-color:#37e07c;color:#7df0ac}
+.tag.red{border-color:#ff6257;color:#ff9a92}
+.input{width:100%;background:#0e1428;border:1px solid #3a4569;border-radius:12px;color:#eef1f9;font-size:16px;padding:12px;margin-top:10px}
+.input:focus{outline:none;border-color:#37e07c}
+.grid1{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.lg{border:1px solid #3a4569;border-radius:12px;padding:12px;background:#141b33;text-align:left;cursor:pointer;color:#eef1f9;font-family:'Rubik'}
+.lg.dead{opacity:.32;text-decoration:line-through;cursor:default}
+.lg .t{font-family:'Oswald';font-size:18px;text-transform:uppercase}
+.lg .s{font-size:12px;color:#8b93ad}
+.slots{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px}
+.slot{font-size:13px;border-radius:8px;padding:6px 8px;background:#0e1428;border:1px solid #232b47;color:#57608a;min-height:31px}
+.slot.open{background:#123b24;border-color:#2c9e5e;color:#d9ffe9}
+.msg{margin-top:10px;font-size:14px;padding:10px 12px;border-radius:10px}
+.msg.ok{background:#123b24;border:1px solid #37e07c}
+.msg.bad{background:#3b1512;border:1px solid #ff6257}
+.cat{margin-top:12px}
+.cat .ct{font-family:'Oswald';text-transform:uppercase;font-size:15px;color:#cdd4ea;margin-bottom:6px}
+.vals{display:flex;gap:8px}
+.vbtn{flex:1;font-family:'Oswald';font-size:20px;padding:12px 0;border-radius:10px;border:1.5px solid #37e07c;background:#123b24;color:#7df0ac;cursor:pointer}
+.vbtn:disabled{border-color:#232b47;background:#0e1428;color:#3a4569;cursor:default}
+.hint{border-radius:10px;padding:10px 12px;margin-top:8px;background:#123b24;border:1px solid #2c9e5e;font-size:15px;line-height:1.4}
+.hrow{display:flex;justify-content:space-between;font-family:'Oswald';font-size:15px;margin-top:12px}
+.hrow .plus{color:#37e07c}.hrow .minus{color:#ff6257}
+.strike{color:#ff6257;font-family:'Oswald';letter-spacing:2px}
+.podium{text-align:center;padding:30px 0}
+.podium .place{font-family:'Oswald';font-size:20px;margin-top:14px}
+.podium .win{font-size:34px;color:#37e07c}
+.small{font-size:13px;color:#8b93ad;margin-top:8px;line-height:1.4}
+.turnbar{margin-top:12px;font-size:15px}
+.turnbar b{color:#7df0ac}
+details.spoiler{margin-top:10px}
+details.spoiler summary{cursor:pointer;color:#8b93ad;font-size:13px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ================= ДАНІ ================= */
+
+var LEAGUES = [
+  { id:"t1", title:"АПЛ 2025/26", season:"Англія", note:"топ-8 підсумкової таблиці", teams:[
+    ["Арсенал",["каноніри"]],
+    ["Манчестер Сіті",["ман сіті","мансіті","сіті"]],
+    ["Манчестер Юнайтед",["ман юнайтед","манюнайтед","юнайтед","мю"]],
+    ["Астон Вілла",["вілла"]],
+    ["Ліверпуль",[]],
+    ["Борнмут",[]],
+    ["Сандерленд",[]],
+    ["Брайтон",["брайтон енд хоув альбіон"]]
+  ]},
+  { id:"t2", title:"УПЛ 2025/26", season:"Україна", note:"топ-8 підсумкової таблиці", teams:[
+    ["Шахтар",["шахтар донецьк","гірники"]],
+    ["ЛНЗ",["лнз черкаси"]],
+    ["Полісся",["полісся житомир","вовки"]],
+    ["Динамо Київ",["динамо","київське динамо"]],
+    ["Металіст 1925",["металіст"]],
+    ["Колос",["колос ковалівка"]],
+    ["Кривбас",["кривбас кривий ріг"]],
+    ["Зоря",["зоря луганськ"]]
+  ]},
+  { id:"t3", title:"Ла Ліга 2025/26", season:"Іспанія", note:"топ-8 підсумкової таблиці", teams:[
+    ["Барселона",["барса"]],
+    ["Реал Мадрид",["реал"]],
+    ["Вільяреал",[]],
+    ["Атлетіко",["атлетіко мадрид","атлеті"]],
+    ["Бетіс",["реал бетіс"]],
+    ["Сельта",["сельта віго"]],
+    ["Хетафе",[]],
+    ["Райо Вальєкано",["райо"]]
+  ]},
+  { id:"t4", title:"Бомбардири мундіалів", season:"Історія", note:"топ-7 за всі чемпіонати світу", teams:[
+    ["Кіліан Мбаппе",["мбаппе"]],
+    ["Ліонель Мессі",["мессі"]],
+    ["Міролав Клозе",["клозе"]],
+    ["Роналдо (Бразилія)",["роналдо","роналдо назаріо","зубастик"]],
+    ["Герд Мюллер",["мюллер","герд мюлер"]],
+    ["Жуст Фонтен",["фонтен"]],
+    ["Пеле",[]]
+  ]}
+];
+
+var R2_CATS = [
+  { title:"ЧС-2026", qs:[
+    { v:10, q:"Які три країни спільно приймали чемпіонат світу 2026 року?", a:"США, Канада і Мексика" },
+    { v:20, q:"Скільки збірних уперше грали у фінальній частині мундіалю?", a:"48" },
+    { v:30, q:"Хто забив єдиний гол у фіналі ЧС-2026 і на якій хвилині?", a:"Ферран Торрес, 106-та хвилина (Іспанія — Аргентина 1:0)" }
+  ]},
+  { title:"Єврокубки", qs:[
+    { v:10, q:"Який клуб виграв Лігу чемпіонів сезону 2025/26?", a:"ПСЖ (другий трофей поспіль)" },
+    { v:20, q:"Кого ПСЖ обіграв у фіналі та яким чином?", a:"Арсенал: 1:1 в основний час, 4:3 у серії пенальті" },
+    { v:30, q:"На якому стадіоні та в якому місті грали той фінал?", a:"«Пушкаш-Арена», Будапешт" }
+  ]},
+  { title:"Україна", qs:[
+    { v:10, q:"Хто став чемпіоном України в сезоні 2025/26?", a:"Шахтар" },
+    { v:20, q:"Який клуб уперше в історії здобув срібло УПЛ у тому сезоні?", a:"ЛНЗ (Черкаси)" },
+    { v:30, q:"На якому місці фінішувало Динамо — і чим цей результат примітний?", a:"Четверте; лише втретє в історії клуб залишився поза топ-3" }
+  ]},
+  { title:"Історія футболу", qs:[
+    { v:10, q:"Скільки гравців однієї команди одночасно перебувають на полі?", a:"11" },
+    { v:20, q:"У якому році відбувся перший чемпіонат світу і хто його виграв?", a:"1930, Уругвай" },
+    { v:30, q:"Хто єдиний у світі тричі ставав чемпіоном світу як гравець?", a:"Пеле (1958, 1962, 1970)" }
+  ]}
+];
+
+var R3 = {
+  fakeTitle:"«Дім, милий дім»",
+  theme:"Усі відповіді — люди, чиїми іменами названі стадіони",
+  themeNote:"Пушкаш-Арена (Будапешт), стадіон Дієго Армандо Марадони (Неаполь), Йоган Кройф Арена (Амстердам), Сантьяго Бернабеу (Мадрид), Джузеппе Меацца (Мілан), Фріц-Вальтер-Штадіон (Кайзерслаутерн).",
+  qs:[
+    { q:"Хто був лідером угорської «золотої команди» 1950-х і забив 84 голи за збірну?", a:"Ференц Пушкаш" },
+    { q:"Хто забив «руку Бога» та «гол століття» в одному матчі ЧС-1986?", a:"Дієго Марадона" },
+    { q:"Хто уславив тотальний футбол як гравець «Аякса», а потім тренував «Барселону»?", a:"Йоган Кройф" },
+    { q:"Який президент «Реала» керував клубом, коли той виграв перші пʼять Кубків чемпіонів?", a:"Сантьяго Бернабеу" },
+    { q:"Італійський форвард 1930-х, дворазовий чемпіон світу й легенда «Інтера» — хто це?", a:"Джузеппе Меацца" },
+    { q:"Хто був капітаном збірної ФРН, яка сенсаційно виграла ЧС-1954?", a:"Фріц Вальтер" }
+  ]
+};
+
+var R4 = [
+  { a:"Зінедін Зідан", hints:[
+    "Народився в Марселі у великій родині вихідців з Алжиру.",
+    "Грав за «Ювентус», а потім став найдорожчим трансфером свого часу.",
+    "Забив неймовірний гол лівою ногою з льоту у фіналі Ліги чемпіонів 2002 року.",
+    "Кар'єру гравця завершив вилученням у фіналі чемпіонату світу за удар головою.",
+    "Як тренер «Реала» виграв три Ліги чемпіонів поспіль."
+  ]},
+  { a:"Андрій Шевченко", hints:[
+    "Народився 1976 року в селі на Київщині, дитиною виїхав із зони відчуження.",
+    "Більшу частину клубної кар'єри провів в Італії, де став ідолом трибун.",
+    "У 2004 році отримав «Золотий м'яч».",
+    "Найкращий бомбардир в історії збірної України.",
+    "Сьогодні очолює Українську асоціацію футболу."
+  ]},
+  { a:"Кіліан Мбаппе", hints:[
+    "Виріс у передмісті Парижа, заграв на дорослому рівні в «Монако» ще підлітком.",
+    "У 19 років уже став чемпіоном світу.",
+    "У 2022-му оформив хет-трик у фіналі мундіалю — і все одно програв.",
+    "Влітку 2024 року перейшов у «Реал Мадрид» вільним агентом.",
+    "На ЧС-2026 забив 10 голів і став найкращим бомбардиром в історії мундіалів."
+  ]}
+];
+
+var R4_REWARD = [50,40,30,20,10];
+var R4_PENALTY = [10,20,30,40,50];
+var R1_AWARDS = [50,30,0];
+var R2_TOTAL = R2_CATS.reduce(function(s,c){return s+c.qs.length;},0);
+
+/* ================= УТИЛІТИ ================= */
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+function norm(s){
+  return s.toLowerCase().replace(/['’ʼ`´-]/g,"").replace(/є/g,"е").replace(/і/g,"и").replace(/ї/g,"и").replace(/\s+/g," ").trim();
+}
+function lev(a,b){
+  if (Math.abs(a.length-b.length) > 2) return 99;
+  var m=[]; for (var i=0;i<=a.length;i++){ m[i]=[i]; }
+  for (var j=0;j<=b.length;j++){ m[0][j]=j; }
+  for (i=1;i<=a.length;i++) for (j=1;j<=b.length;j++)
+    m[i][j]=Math.min(m[i-1][j]+1, m[i][j-1]+1, m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return m[a.length][b.length];
+}
+function matchTeam(input, team){
+  var ni=norm(input); if(!ni) return false;
+  var cands=[team[0]].concat(team[1]).map(norm);
+  return cands.some(function(c){ return c===ni || (c.length>4 && lev(c,ni)<=1); });
+}
+
+/* ================= СТАН ================= */
+
+var S = {
+  stage:"setup",
+  players:["Гравець 1","Гравець 2","Гравець 3"],
+  totals:[0,0,0],
+  banned:[], banTurn:0,
+  r1Pts:[0,0,0], strikes:[0,0,0], r1Turn:0, revealed:{}, r1Msg:null, r1Award:null,
+  used:{}, picker:0, cur2:null, phase2:"pick", show2:false, stealer:null,
+  q3:0, lock3:[], buzz3:null, show3:false,
+  q4:0, hl:1, lock4:[], buzz4:null, done4:false
+};
+
+function add(i,v){ S.totals[i]+=v; }
+function league(){ return LEAGUES.filter(function(l){ return S.banned.indexOf(l.id)===-1; })[0]; }
+function aliveNext(from,str){
+  for (var s=1;s<=3;s++){ var n=(from+s)%3; if (str[n]<3) return n; }
+  return -1;
+}
+
+/* ================= ДІЇ ================= */
+
+function startGame(){
+  for (var i=0;i<3;i++){
+    var v=document.getElementById("pn"+i).value.trim();
+    if (v) S.players[i]=v;
+  }
+  S.stage="r1ban"; render();
+}
+function banLeague(id){
+  S.banned.push(id);
+  if (S.banned.length===3) S.stage="r1play";
+  else S.banTurn=(S.banTurn+1)%3;
+  render();
+}
+function finishR1(){
+  var pts=S.r1Pts, str=S.strikes;
+  var order=[0,1,2].sort(function(a,b){ return pts[b]-pts[a] || str[a]-str[b]; });
+  var award=[0,0,0];
+  order.forEach(function(p,rank){ award[p]=R1_AWARDS[rank]; });
+  for (var i=0;i<3;i++) S.totals[i]+=award[i];
+  S.r1Award={order:order, pts:pts.slice()};
+  S.stage="r1result"; render();
+}
+function submitGuess(){
+  var el=document.getElementById("guess");
+  var g=el?el.value:"";
+  if (!g.trim()) return;
+  var L=league(), idx=-1, already=-1;
+  for (var i=0;i<L.teams.length;i++){
+    if (matchTeam(g,L.teams[i])){
+      if (S.revealed[i]===undefined && idx===-1) idx=i;
+      if (S.revealed[i]!==undefined && already===-1) already=i;
+    }
+  }
+  if (idx>=0){
+    var got=idx+1;
+    S.r1Pts[S.r1Turn]+=got;
+    S.revealed[idx]=S.r1Turn;
+    S.r1Msg={ok:true, t:L.teams[idx][0]+" — "+got+" місце, +"+got+" балів для «"+S.players[S.r1Turn]+"»"};
+  } else {
+    S.strikes[S.r1Turn]+=1;
+    S.r1Msg={ok:false, t: already>=0 ? "«"+L.teams[already][0]+"» вже називали — страйк!" : "Такого варіанта в таблиці немає — страйк!"};
+  }
+  var openLeft=L.teams.length-Object.keys(S.revealed).length;
+  var nxt=aliveNext(S.r1Turn,S.strikes);
+  if (openLeft===0 || nxt===-1) { finishR1(); return; }
+  S.r1Turn=nxt; render();
+}
+function passR1(){
+  S.strikes[S.r1Turn]+=1;
+  S.r1Msg={ok:false, t:"«"+S.players[S.r1Turn]+"» пасує — страйк!"};
+  var nxt=aliveNext(S.r1Turn,S.strikes);
+  if (nxt===-1){ finishR1(); return; }
+  S.r1Turn=nxt; render();
+}
+function toStage(st){ S.stage=st; render(); }
+function pickQ(ci,qi){ S.cur2={c:ci,q:qi}; S.phase2="q"; S.show2=false; S.stealer=null; render(); }
+function r2Show(){ S.show2=true; render(); }
+function closeQ2(){
+  S.used[S.cur2.c+"-"+S.cur2.q]=true;
+  S.cur2=null; S.phase2="pick"; S.picker=(S.picker+1)%3; render();
+}
+function r2Verdict(ok){
+  var Q=R2_CATS[S.cur2.c].qs[S.cur2.q];
+  if (ok){ add(S.picker,Q.v); closeQ2(); }
+  else { S.phase2="steal"; render(); }
+}
+function r2Steal(i){ S.stealer=i; render(); }
+function r2StealVerdict(ok){
+  var Q=R2_CATS[S.cur2.c].qs[S.cur2.q];
+  add(S.stealer, ok?Q.v:-10); closeQ2();
+}
+function r3Show(){ S.show3=true; render(); }
+function r3Buzz(i){ S.buzz3=i; render(); }
+function r3Next(){
+  if (S.q3===R3.qs.length-1){ S.stage="r3theme"; }
+  else { S.q3+=1; S.lock3=[]; S.buzz3=null; S.show3=false; }
+  render();
+}
+function r3Verdict(ok){
+  if (ok){ add(S.buzz3,20); r3Next(); }
+  else { add(S.buzz3,-10); S.lock3.push(S.buzz3); S.buzz3=null; render(); }
+}
+function r4Buzz(i){ S.buzz4=i; render(); }
+function r4Hint(){ S.hl+=1; render(); }
+function r4GiveUp(){ S.done4=true; render(); }
+function r4Verdict(ok){
+  var lvl=S.hl-1;
+  if (ok){ add(S.buzz4,R4_REWARD[lvl]); S.done4=true; }
+  else { add(S.buzz4,-R4_PENALTY[lvl]); S.lock4.push(S.buzz4); S.buzz4=null; }
+  render();
+}
+function r4Next(){
+  if (S.q4===R4.length-1){ S.stage="final"; }
+  else { S.q4+=1; S.hl=1; S.lock4=[]; S.buzz4=null; S.done4=false; }
+  render();
+}
+
+/* ================= РЕНДЕР ================= */
+
+function board(){
+  var mx=Math.max.apply(null,S.totals);
+  var any=S.totals.some(function(t){return t!==0;});
+  return '<div class="board">'+S.players.map(function(p,i){
+    return '<div class="pcell'+((any&&S.totals[i]===mx)?' lead':'')+'"><div class="nm">'+esc(p)+'</div><div class="sc">'+S.totals[i]+'</div></div>';
+  }).join('')+'</div>';
+}
+
+function playerBtns(fn, lockArr, skip){
+  return '<div class="row">'+S.players.map(function(p,i){
+    if (skip!==undefined && i===skip) return '';
+    var dis=lockArr && lockArr.indexOf(i)>=0;
+    return '<button class="btn blue" '+(dis?'disabled':'')+' onclick="'+fn+'('+i+')">'+esc(p)+'</button>';
+  }).join('')+'</div>';
+}
+
+function render(){
+  var h='';
+  if (S.stage!=="setup") h+=board();
+  h+='<div class="wrap">';
+
+  if (S.stage==="setup"){
+    h+='<div class="h rname" style="margin-top:24px">Футбольний квіз на трьох · ведучий керує з цього екрана</div>'
+      +'<div class="h rtitle" style="font-size:42px">Пресинг · Футбол</div>'
+      +'<div class="card"><div style="font-size:14px;color:#aab2cc;margin-bottom:8px">Впишіть імена гравців. Далі всім керує ведучий: він читає питання вголос і тисне кнопки на цьому екрані.</div>';
+    for (var i=0;i<3;i++) h+='<input class="input" id="pn'+i+'" value="'+esc(S.players[i])+'">';
+    h+='<button class="btn" onclick="startGame()">Почати гру</button>'
+      +'<div class="small">Раунд I — турнірна таблиця: скільки місце, стільки й балів. Раунд II — 4 категорії по 10/20/30. Раунд III — 6 питань зі спільною таємною темою. Раунд IV — 3 загадки по 5 підказок. Дані актуальні на завершення сезону 2025/26 та ЧС-2026.</div></div>';
+  }
+
+  if (S.stage==="r1ban"){
+    h+='<div class="h rname">Раунд I · Таблиця</div><div class="h rtitle">Викреслюємо таблиці</div>'
+      +'<div class="turnbar">Хід: <b>'+esc(S.players[S.banTurn])+'</b> — прибери одну таблицю</div><div class="grid1">';
+    LEAGUES.forEach(function(l){
+      var dead=S.banned.indexOf(l.id)>=0;
+      h+='<button class="lg'+(dead?' dead':'')+'" '+(dead?'disabled':'')+' onclick="banLeague(\''+l.id+'\')">'
+        +'<div class="t">'+esc(l.title)+'</div><div class="s">'+esc(l.season)+' · '+esc(l.note)+'</div></button>';
+    });
+    h+='</div><div class="small">Кожен гравець прибирає одну таблицю. Граємо тією, що залишиться останньою.</div>';
+  }
+
+  if (S.stage==="r1play"){
+    var L=league();
+    h+='<div class="h rname">Раунд I · Таблиця</div><div class="h rtitle">'+esc(L.title)+'</div><div class="card">'
+      +'<div class="turnbar">Називає позицію: <b>'+esc(S.players[S.r1Turn])+'</b></div><div style="margin-top:6px">';
+    S.players.forEach(function(p,i){
+      h+='<span class="tag'+(S.strikes[i]>=3?' red':'')+'">'+esc(p)+': '+S.r1Pts[i]+' б · <span class="strike">'+("✕".repeat(S.strikes[i])||"—")+'</span></span>';
+    });
+    h+='</div><input class="input" id="guess" placeholder="Ваш варіант…" onkeydown="if(event.key===\'Enter\')submitGuess()">'
+      +'<div class="row"><button class="btn" onclick="submitGuess()">Відповісти</button>'
+      +'<button class="btn red" onclick="passR1()">Пас (страйк)</button></div>';
+    if (S.r1Msg) h+='<div class="msg '+(S.r1Msg.ok?'ok':'bad')+'">'+esc(S.r1Msg.t)+'</div>';
+    h+='<div class="slots">';
+    L.teams.forEach(function(t,i){
+      var op=S.revealed[i]!==undefined;
+      h+='<div class="slot'+(op?' open':'')+'">'+(i+1)+'. '+(op?esc(t[0])+' · '+esc(S.players[S.revealed[i]]):'?')+'</div>';
+    });
+    h+='</div><details class="spoiler"><summary>Спойлер для ведучого: показати всю таблицю</summary><div class="small">'
+      +L.teams.map(function(t,i){return (i+1)+'. '+esc(t[0]);}).join(' · ')
+      +'</div></details><button class="btn ghost" onclick="finishR1()">Завершити раунд достроково</button></div>';
+  }
+
+  if (S.stage==="r1result" && S.r1Award){
+    h+='<div class="h rname">Раунд I · Підсумок</div><div class="h rtitle">Місця та бали</div><div class="card">';
+    S.r1Award.order.forEach(function(p,rank){
+      h+='<div class="hrow"><span>'+(rank+1)+' місце — '+esc(S.players[p])+' ('+S.r1Award.pts[p]+' б у раунді)</span><span class="plus">+'+R1_AWARDS[rank]+'</span></div>';
+    });
+    h+='<button class="btn blue" onclick="toStage(\'r2\')">До раунду II →</button></div>';
+  }
+
+  if (S.stage==="r2"){
+    h+='<div class="h rname">Раунд II · Категорії</div><div class="h rtitle">Обирай категорію і ціну</div>';
+    if (S.phase2==="pick"){
+      h+='<div class="turnbar">Обирає питання: <b>'+esc(S.players[S.picker])+'</b></div>';
+      R2_CATS.forEach(function(c,ci){
+        h+='<div class="cat"><div class="ct">'+esc(c.title)+'</div><div class="vals">';
+        c.qs.forEach(function(q,qi){
+          var dis=S.used[ci+"-"+qi];
+          h+='<button class="vbtn" '+(dis?'disabled':'')+' onclick="pickQ('+ci+','+qi+')">'+q.v+'</button>';
+        });
+        h+='</div></div>';
+      });
+      if (Object.keys(S.used).length===R2_TOTAL)
+        h+='<button class="btn blue" onclick="toStage(\'r3intro\')">До раунду III →</button>';
+    } else if (S.cur2){
+      var Q=R2_CATS[S.cur2.c].qs[S.cur2.q];
+      h+='<div class="card"><span class="tag green">'+esc(R2_CATS[S.cur2.c].title)+' · '+Q.v+' балів</span>'
+        +'<div class="qbox" style="margin-top:10px">'+esc(Q.q)+'</div>';
+      if (S.show2) h+='<div class="abox">Відповідь: <b>'+esc(Q.a)+'</b></div>';
+      else h+='<button class="btn ghost" onclick="r2Show()">Показати відповідь (ведучому)</button>';
+      if (S.phase2==="q"){
+        h+='<div class="turnbar">Відповідає: <b>'+esc(S.players[S.picker])+'</b></div>'
+          +'<div class="row"><button class="btn" onclick="r2Verdict(true)">Правильно +'+Q.v+'</button>'
+          +'<button class="btn red" onclick="r2Verdict(false)">Неправильно</button></div>';
+      }
+      if (S.phase2==="steal" && S.stealer===null){
+        h+='<div class="turnbar">Перехоплення! Хто перший підняв руку?</div>'
+          +playerBtns('r2Steal', null, S.picker)
+          +'<button class="btn ghost" onclick="closeQ2()">Ніхто не перехопив</button>';
+      }
+      if (S.phase2==="steal" && S.stealer!==null){
+        h+='<div class="turnbar">Перехоплює: <b>'+esc(S.players[S.stealer])+'</b></div>'
+          +'<div class="row"><button class="btn" onclick="r2StealVerdict(true)">Правильно +'+Q.v+'</button>'
+          +'<button class="btn red" onclick="r2StealVerdict(false)">Неправильно −10</button></div>';
+      }
+      h+='</div>';
+    }
+  }
+
+  if (S.stage==="r3intro"){
+    h+='<div class="h rname">Раунд III · Прихована тема</div><div class="h rtitle">'+esc(R3.fakeTitle)+'</div>'
+      +'<div class="card"><div style="font-size:15px;line-height:1.5">Питання, об\'єднані таємною темою. Назва раунду — єдиний натяк 😏 Відповідають на швидкість: хто перший підняв руку. Правильно <b style="color:#37e07c">+20</b>, неправильно <b style="color:#ff6257">−10</b> і на це питання більше не відповідаєш.</div>'
+      +'<button class="btn" onclick="toStage(\'r3\')">Погнали</button></div>';
+  }
+
+  if (S.stage==="r3"){
+    var Q3=R3.qs[S.q3];
+    h+='<div class="h rname">Раунд III · '+esc(R3.fakeTitle)+'</div><div class="h rtitle">Питання '+(S.q3+1)+' / '+R3.qs.length+'</div><div class="card">'
+      +'<div class="qbox">'+esc(Q3.q)+'</div>';
+    if (S.show3) h+='<div class="abox">Відповідь: <b>'+esc(Q3.a)+'</b></div>';
+    else h+='<button class="btn ghost" onclick="r3Show()">Показати відповідь (ведучому)</button>';
+    if (S.buzz3===null){
+      h+='<div class="turnbar">Хто перший підняв руку?</div>'+playerBtns('r3Buzz',S.lock3)
+        +'<button class="btn ghost" onclick="r3Next()">Ніхто не відповів → далі</button>';
+    } else {
+      h+='<div class="turnbar">Відповідає: <b>'+esc(S.players[S.buzz3])+'</b></div>'
+        +'<div class="row"><button class="btn" onclick="r3Verdict(true)">Правильно +20</button>'
+        +'<button class="btn red" onclick="r3Verdict(false)">Неправильно −10</button></div>';
+    }
+    h+='</div>';
+  }
+
+  if (S.stage==="r3theme"){
+    h+='<div class="h rname">Раунд III · Розкриття</div><div class="h rtitle">Тема раунду</div>'
+      +'<div class="card" style="text-align:center"><div class="qbox" style="font-size:22px;font-family:\'Oswald\'">'+esc(R3.theme)+'</div>'
+      +'<div class="small">'+esc(R3.themeNote)+'</div>'
+      +'<button class="btn blue" onclick="toStage(\'r4intro\')">До фінального раунду →</button></div>';
+  }
+
+  if (S.stage==="r4intro"){
+    h+='<div class="h rname">Раунд IV</div><div class="h rtitle">Остання глава</div><div class="card">'
+      +'<div style="font-size:15px;line-height:1.5">Загадані постаті, до кожної — 5 підказок. Чим раніше ризикнеш, тим більша нагорода і менший штраф:</div>';
+    R4_REWARD.forEach(function(r,i){
+      h+='<div class="hrow"><span>Після '+(i+1)+'-ї підказки</span><span><span class="plus">+'+r+'</span> / <span class="minus">−'+R4_PENALTY[i]+'</span></span></div>';
+    });
+    h+='<div class="small">Помилка = штраф і блок на це питання для гравця. Відповідають на швидкість.</div>'
+      +'<button class="btn" onclick="toStage(\'r4\')">Почати фінал</button></div>';
+  }
+
+  if (S.stage==="r4"){
+    var Q4=R4[S.q4], lvl=S.hl-1;
+    h+='<div class="h rname">Раунд IV · Остання глава</div><div class="h rtitle">Загадка '+(S.q4+1)+' / '+R4.length+'</div><div class="card">'
+      +'<div class="hrow" style="margin-top:0"><span>Підказка '+S.hl+' з 5</span><span><span class="plus">+'+R4_REWARD[lvl]+'</span> / <span class="minus">−'+R4_PENALTY[lvl]+'</span></span></div>';
+    for (var k=0;k<S.hl;k++) h+='<div class="hint">'+(k+1)+'. '+esc(Q4.hints[k])+'</div>';
+    if (S.done4) h+='<div class="abox">Відповідь: <b>'+esc(Q4.a)+'</b></div>';
+    if (!S.done4 && S.buzz4===null){
+      h+=playerBtns('r4Buzz',S.lock4);
+      if (S.hl<5) h+='<button class="btn ghost" onclick="r4Hint()">Наступна підказка</button>';
+      h+='<button class="btn ghost" onclick="r4GiveUp()">Здаємось — показати відповідь</button>';
+    }
+    if (!S.done4 && S.buzz4!==null){
+      h+='<div class="turnbar">Відповідає: <b>'+esc(S.players[S.buzz4])+'</b></div>'
+        +'<div class="row"><button class="btn" onclick="r4Verdict(true)">Правильно +'+R4_REWARD[lvl]+'</button>'
+        +'<button class="btn red" onclick="r4Verdict(false)">Неправильно −'+R4_PENALTY[lvl]+'</button></div>';
+    }
+    if (S.done4) h+='<button class="btn" onclick="r4Next()">'+(S.q4===R4.length-1?'Підсумки гри →':'Наступна загадка →')+'</button>';
+    h+='</div>';
+  }
+
+  if (S.stage==="final"){
+    var order=[0,1,2].sort(function(a,b){return S.totals[b]-S.totals[a];});
+    h+='<div class="podium"><div class="h rname">Гру завершено</div><div class="h rtitle" style="font-size:34px">Результати</div>'
+      +'<div class="place win h">🏆 '+esc(S.players[order[0]])+' — '+S.totals[order[0]]+'</div>'
+      +'<div class="place h">🥈 '+esc(S.players[order[1]])+' — '+S.totals[order[1]]+'</div>'
+      +'<div class="place h">🥉 '+esc(S.players[order[2]])+' — '+S.totals[order[2]]+'</div>'
+      +'<button class="btn ghost" style="max-width:300px;margin:26px auto 0" onclick="location.reload()">Зіграти ще раз</button></div>';
+  }
+
+  h+='</div>';
+  document.getElementById("app").innerHTML=h;
+  var g=document.getElementById("guess");
+  if (g) g.focus();
+}
+
+render();
+</script>
+</body>
+</html>
